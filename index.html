@@ -4,7 +4,7 @@
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black">
 <meta name="apple-mobile-web-app-title" content="Bee Bee Block">
-<title>ハチノスツツク 開発版 d84</title>
+<title>ハチノスツツク 開発版 d85</title>
 <style>
   :root{
     --paper:#E3E1D8;
@@ -787,7 +787,7 @@ html:not([lang="en"]) .en-only{display:none!important}
       <div id="mmsg" class="mmsg"></div>
     </div>
     <p class="note">
-      <b>ハチノスツツク 開発版 d84</b>（CPUの同角度連続を制限・サイドアタックの素通りを修正・超級とふつうを少し弱く）<br>
+      <b>ハチノスツツク 開発版 d85</b>（CPUの同角度連続を制限・サイドアタックの素通りを修正・超級とふつうを少し弱く）<br>
       設定は全て開いています。マップの貼り付けと登録も使えます。<br>
       盤面のマスは必ずどちらかの色です。自分にとって壁のマスを叩くと、消えずに裏返って自分の通り道になり、同時に相手の壁になります。盤面の総量は変わらず、動くのは境界線だけです。<br>
       最下段は自分のパドルが走る列です。ここを埋められると動ける幅が減ります。パドルが覆っているマスは反転されないので、足場が尽きることはありません。相手の最下段を削るのは攻撃ですが、開けすぎると自分の玉がそこから抜けて謹慎になります。<br>
@@ -5234,7 +5234,7 @@ requestAnimationFrame(tick);
 ======================================================================== */
 const TELEM_KEY = 'hachinos_telemetry_v1';
 const TELEM_MAX = 40;
-const BUILD = 'd84';
+const BUILD = 'd85';
 document.querySelectorAll('.buildNo').forEach(e => { e.textContent = BUILD; });
 
 function telemDeviceId() {
@@ -5521,5 +5521,10 @@ $('telemBtn').addEventListener('click', () => {
   const c = telem.current();
   telemShow(c ? telem.report(c) : '記録がありません。');
 });
+
+// オフライン対応。https で公開されたときだけ sw.js を登録する（ファイルから開いたときは何もしない）。
+if ('serviceWorker' in navigator && location.protocol === 'https:') {
+  window.addEventListener('load', () => { navigator.serviceWorker.register('sw.js').catch(() => {}); });
+}
 
 </script>
