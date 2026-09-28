@@ -7,7 +7,7 @@
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="apple-touch-icon" href="icon-192.png">
 <meta name="theme-color" content="#1b2a44">
-<title>ハチノスツツク 開発版 d85f</title>
+<title>ハチノスツツク 開発版 d86</title>
 <style>
   :root{
     --paper:#E3E1D8;
@@ -365,6 +365,8 @@ body.vs .bar.top{display:none}
 .stockpanel .sub{margin-left:7px;font-size:11px;opacity:.9}
 .stockpanel.empty .n{color:#FF6A55}
 .stockpanel .hot{color:#FFB84D}
+.stockpanel .brk{color:#7FE7FF;font-weight:700}
+.stockpanel .ok{color:#9CFF6B;font-weight:700}
 
 /* 背景とキャラの層。盤面の位置に合わせて毎回配置する（layoutStage）。
    盤面の位置が先で、絵はそれに従う。操作は一切受けない。 */
@@ -416,7 +418,13 @@ html:not([lang="en"]) .en-only{display:none!important}
 .langsw{display:flex;justify-content:center;gap:6px;margin:0 0 8px}
 .langsw .modebtn{font-size:12px;padding:4px 12px}
 
-.howver{margin:18px 0 0;text-align:right;font-size:11px;opacity:.55}
+.howver{margin:18px 0 0;text-align:right;font-size:11px;opacity:.75}
+.howver .newsBtn{font-size:12px;padding:4px 12px;margin-right:4px;border:1px solid var(--ink);background:transparent;border-radius:999px;cursor:pointer;touch-action:manipulation}
+#news{z-index:30}
+.newslist{font-size:13px;line-height:1.7;padding:2px 2px 10px}
+.newslist h4{margin:12px 0 2px;font-size:13px}
+.newslist h4 small{font-weight:400;opacity:.6;margin-left:6px}
+.newslist ul{margin:0;padding-left:1.2em}
 
 /* ==== タイトル画面（1枚絵＋ボタン）==== */
 #titleScr{position:fixed;inset:0;z-index:40;background:#0e1924;display:flex;align-items:center;justify-content:center}
@@ -624,6 +632,13 @@ html:not([lang="en"]) .en-only{display:none!important}
       <label for="map" data-en="Map Type">マップの種類</label>
       <select id="map"></select>
     </div>
+    <div class="row">
+      <label data-en="Rampart Mode">城壁モード</label>
+      <div class="btns" style="flex:1;padding:0">
+        <button id="footNormal" class="modebtn on" data-en="Off">オフ</button>
+        <button id="footArmor" class="modebtn" data-en="On">オン</button>
+      </div>
+    </div>
 
     <div class="btns prebtns">
       <button id="preHelp" data-en="How to Play">遊び方</button>
@@ -724,6 +739,7 @@ html:not([lang="en"]) .en-only{display:none!important}
 <div class="row"><label for="hrnT">供給の間隔</label><input id="hrnT" type="range" min="3" max="30" step="1" value="10"><output id="hrnTv">10</output></div>
 <div class="note">テスト専用。入にすると一定秒ごとにCPU側からMAX玉（ススメバチ）が飛んできます。在庫と同時出玉の制限は無視します。迎撃の練習と計測用で、配布版には入れません。</div>
 <div class="row"><label for="sh">側面の高さ</label><input id="sh" type="range" min="2" max="14" step="1" value="6"><output id="shv">6</output></div>
+<div class="row"><label for="arRest">突破ボーナスの休み</label><input id="arRest" type="range" min="3" max="10" step="1" value="5"><output id="arRestv">5秒</output></div>
 <div class="row"><label for="scOn">サイドクラッシュ</label><input id="scOn" type="range" min="0" max="1" step="1" value="1"><output id="scOnv">入</output></div>
 <div class="note">側面の高さはマスに対する%。側面を玉へ振り抜いて当てると真横へ飛び、最初の壁かブロックで相手陣へ45度になります。ススメバチは 側面ヒット＋加速2以上＋玉の方へ振っている の3つを満たしたときだけ落とせます。</div>
 <div class="row"><label>テスト記録</label><div class="btns" style="flex:1;padding:0"><button id="openTelem">記録を表示</button></div></div>
@@ -830,7 +846,7 @@ html:not([lang="en"]) .en-only{display:none!important}
       <div id="mmsg" class="mmsg"></div>
     </div>
     <p class="note">
-      <b>ハチノスツツク 開発版 d85f</b>（CPUの同角度連続を制限・サイドアタックの素通りを修正・超級とふつうを少し弱く）<br>
+      <b>ハチノスツツク 開発版 d86</b>（城壁モード・突破ボーナス・クリスタルウォールの屈折）<br>
       設定は全て開いています。マップの貼り付けと登録も使えます。<br>
       盤面のマスは必ずどちらかの色です。自分にとって壁のマスを叩くと、消えずに裏返って自分の通り道になり、同時に相手の壁になります。盤面の総量は変わらず、動くのは境界線だけです。<br>
       最下段は自分のパドルが走る列です。ここを埋められると動ける幅が減ります。パドルが覆っているマスは反転されないので、足場が尽きることはありません。相手の最下段を削るのは攻撃ですが、開けすぎると自分の玉がそこから抜けて謹慎になります。<br>
@@ -850,6 +866,49 @@ html:not([lang="en"]) .en-only{display:none!important}
   </div>
 </div>
 
+<div class="modal off" id="news">
+  <div class="sheet">
+    <div class="sheethead"><b data-en="What's New">更新情報</b><button id="newsClose" data-en="Back">戻る</button></div>
+    <div class="newslist ja-only">
+      <h4>d86<small>2026.09.28</small></h4>
+      <ul>
+        <li><b>城壁モード</b>（新）：試合の準備で「城壁モード」をオンにすると、どのマップでも両者の足場が城壁ブロックになります。普通の玉は5発目で反転、ススメバチは一撃。削られるほど色が薄くなります</li>
+        <li><b>突破ボーナス</b>（城壁モードのみ）：一度でも打ち返した玉で、最初の突破から5秒の間に突破を重ねると、しばらく後に玉が追加されます（2回で1個、5回で3個、ススメバチは2回分）。受付中の数と確定したボーナスは玉の在庫の横に表示。打ち返していない玉と、同じ穴の連続突破（垂直連打）は対象外</li>
+        <li><b>クリスタルウォール</b>（全モード）：反転した直後に光るマスへ垂直に当たった玉は、斜めにそれて戻るように</li>
+        <li>そのほか：CPUの第1打をランダムな角度に（同じレベル同士の鏡写しを防ぐ）、遊び方の最後に「更新情報」を追加</li>
+      </ul>
+      <h4>d85c〜d85f<small>2026.09.28</small></h4>
+      <ul>
+        <li>タイトル画面を追加（with デルタもん）</li>
+        <li>「ホーム画面に追加」ボタンを追加。アプリのようにインストールできるように</li>
+        <li>タイトル画面では全画面にならないように修正</li>
+      </ul>
+      <h4>d85b<small>2026.09.27</small></h4>
+      <ul><li>上キャラの勝利画像を差し替え</li></ul>
+      <h4>d85<small>2026.09.26</small></h4>
+      <ul><li>公開</li></ul>
+    </div>
+    <div class="newslist en-only">
+      <h4>d86<small>2026.09.28</small></h4>
+      <ul>
+        <li><b>Rampart Mode</b> (new): turn it on in Match Setup and both footings become rampart blocks on any map. A normal bee flips one on the 5th hit, a Hornet in one. Blocks fade as they wear down</li>
+        <li><b>Breakthrough Bonus</b> (Rampart Mode only): break through again within 5 seconds of the first with bees you've returned, and bonus bees arrive a little later (2 breaks: +1, 5 breaks: +3; a Hornet counts as 2). The count and secured bonus appear next to your bee stock. Unreturned bees and repeated breaks through the same hole (straight-shot spam) don't count</li>
+        <li><b>Crystal Wall</b> (all modes): a bee that hits a just-flipped, glowing cell straight on is refracted and comes back at an angle</li>
+        <li>Also: the CPU's first shot now goes at a random angle (no more mirror matches between same-level CPUs), and "What's New" was added to the end of How to Play</li>
+      </ul>
+      <h4>d85c–d85f<small>2026.09.28</small></h4>
+      <ul>
+        <li>Added a title screen (with Deltamon)</li>
+        <li>Added an "Add to Home Screen" button so you can install the game like an app</li>
+        <li>The title screen no longer goes full screen</li>
+      </ul>
+      <h4>d85b<small>2026.09.27</small></h4>
+      <ul><li>Replaced the top character's win image</li></ul>
+      <h4>d85<small>2026.09.26</small></h4>
+      <ul><li>Released</li></ul>
+    </div>
+  </div>
+</div>
 <div class="modal off" id="howto">
   <div class="sheet">
     <div class="sheethead"><b data-en="How to Play">遊び方</b><button id="howtoClose" data-en="Close">閉じる</button></div>
@@ -865,7 +924,13 @@ html:not([lang="en"]) .en-only{display:none!important}
       <h4>玉を育てる</h4>
       パドルで打ち返すたびに、玉は育ちます。育った玉は壁を貫いて、たくさん裏返します。最大まで育つとMAX玉（ススメバチ）になり、公式とドッカンでは相手のパドルを割って、しばらく動けなくします。
       <h4>足場</h4>
+      <b>クリスタルウォール</b>：反転した直後のマスは、0.5秒だけ水色に光って相手の玉を弾きます。ここへ真っすぐ（垂直に近く）当たった玉は、斜めにそれて戻ります。<br>
       いちばん下の列は、パドルが走る足場です。削られると動ける幅が狭くなります。パドルの足元のマスだけは守られます。
+      <h4>城壁モード</h4>
+      試合の準備で城壁モードを「オン」にすると、どのマップでも両者の足場が城壁ブロックになります。普通の玉は5発目で反転、ススメバチは一撃で割ります。削られるほど色が薄くなり、一度反転したマスは普通のマスに戻ります。<br>
+      <b>突破ボーナス</b>（城壁モードのみ）：相手の足場を突破した玉は謹慎になりますが、一度でも打ち返した玉で、最初の謹慎から5秒の間に突破を重ねると、しばらく後に玉が追加されます（2回で1個、5回で3個。ススメバチは2回分）。<br>
+      玉の在庫の横に、受付中は「突破 数 ⏱残り秒」、突破ボーナスが決まると「+1確定」が出ます。<br>
+      <b>突破ボーナスの対象外</b>：撃ったまま一度も打ち返していない玉の突破と、同じ穴（同じ列）を続けて抜けた突破は数えません。同じ穴への垂直撃ちの連打では、突破ボーナスは増えません。
       <h4>サイドアタック</h4>
       パドルを振りながら、側面で玉を叩くと、玉は真横へ飛び出し、壁で45度に跳ね上がります。
       <h4>クラッシュ</h4>
@@ -883,7 +948,7 @@ html:not([lang="en"]) .en-only{display:none!important}
       ドッカン：1往復で1レベル。MAX玉が飛び交います。GPT（AI級）はドッカンだけで選べます。撃破できたら神。
       <h4>音について</h4>
       iPhoneは、本体の消音スイッチが入っていると音が出ないことがあります。
-      <p class="howver">版 <span class="buildNo"></span></p>
+      <p class="howver"><button class="newsBtn" type="button">更新情報</button>　版 <span class="buildNo"></span></p>
     </div>
     <div class="howto en-only">
       <h4>Goal</h4>
@@ -897,7 +962,13 @@ html:not([lang="en"]) .en-only{display:none!important}
       <h4>Growing Your Bees</h4>
       Every time you return a bee with your paddle, it levels up. Stronger bees pierce through walls and flip more cells. At full strength it becomes a MAX bee &mdash; a Hornet &mdash; and in Official and Boom it can break the enemy paddle and freeze it for a while.
       <h4>Footing</h4>
+      <b>Crystal Wall</b>: a cell that was just flipped glows light blue for 0.5 s and repels enemy bees. A bee that hits it (nearly) straight on is refracted and comes back at an angle.<br>
       The bottom row is the footing your paddle runs on. Lose cells there and your range of movement shrinks. The cells under your paddle are always protected.
+      <h4>Rampart Mode</h4>
+      Turn Rampart Mode on in Match Setup and both footings become rampart blocks on any map: a normal bee flips a cell on the 5th hit, a Hornet breaks it in one. Blocks fade as they wear down, and once flipped a cell is normal again.<br>
+      <b>Breakthrough Bonus</b> (Rampart Mode only): bees that break through the enemy footing are benched, but if bees you've returned at least once break through again within 5 seconds of the first, you get bonus bees a little later (2 breaks: +1, 5 breaks: +3; a Hornet counts as 2).<br>
+      Next to your bee stock, "Break N ⏱s" shows while breaks are being counted, and "+1 locked" once a Breakthrough Bonus is secured.<br>
+      <b>Not counted</b>: breakthroughs by bees you fired but never returned, and repeated breakthroughs through the same hole (same column). Spamming straight shots into one hole earns no bonus.
       <h4>Side Attack</h4>
       Swing your paddle and hit a bee with its side: the bee shoots out sideways, then turns at the wall and climbs at 45&deg;.
       <h4>Crash</h4>
@@ -915,7 +986,7 @@ html:not([lang="en"]) .en-only{display:none!important}
       Boom: one return per level, Hornets everywhere. GPT (AI class) can only be chosen in Boom. Beat it and you're a god.
       <h4>Sound</h4>
       On iPhone, sound may not play while the silent switch is on.
-      <p class="howver">Version <span class="buildNo"></span></p>
+      <p class="howver"><button class="newsBtn" type="button">What's New</button>　Version <span class="buildNo"></span></p>
     </div>
   </div>
 </div>
@@ -1672,9 +1743,82 @@ function applyCustom(rows) {
   }
 }
 
+/* ==== 城壁モード ======================================================
+   オンにすると、どのマップでも両者の足場の行が城壁ブロックになる（5発目で反転。ススメバチは一撃）。
+   固定ブロックはそのまま。一度反転したマスは普通のマスに戻る。
+   突破ボーナス（このモードだけ）: 一度でも自分のパドルで返した玉とススメバチだけが対象。同じセットで同じ列からの突破は1回だけ数える。
+     最初の謹慎から「謹慎の長さ」の間に起きた突破を数える（ススメバチは2つ分）。
+     その後 armorRest 秒は数えない（謹慎の罰は付く）。
+     数え始めから 謹慎の長さ＋armorRest 秒で、2以上なら玉1個、5以上なら玉3個を追加し、受付を再開する。
+     ススメバチ単独でも2つ分なので、突破1回で1個が確定する。追加は在庫の上限まで。 */
+let armorMode = false;
+let armorRest = 5;                       // 秒：数えない休みの長さ（開発版で調整）
+const ARMOR_TOUGH = 4;                   // 5発目で反転
+let brSet = null;                        // 側ごとの { phase, t0, count }
+function applyArmorFooting() {
+  if (!armorMode) return;
+  for (const p of [BOT, TOP]) {
+    const r = PADDLE_ROW[p];
+    for (let c = 0; c < COLS; c++) {
+      if (attr[r][c] && attr[r][c].solid) continue;
+      attr[r][c] = { tough: ARMOR_TOUGH };
+      hp[r][c] = ARMOR_TOUGH;
+    }
+  }
+}
+function brReset() { brSet = [{ phase: 'idle', t0: 0, count: 0 }, { phase: 'idle', t0: 0, count: 0 }]; }
+function brOnBreach(p, b) {
+  if (!armorMode) return;
+  if (!brSet) brReset();
+  // 撃ちっぱなしの玉（一度も自分のパドルで返していない玉）は数えない。
+  // 相手の足場に開いた穴へ垂直に連打するだけで報酬が増えるのを防ぐ。ススメバチは常に数える。
+  const tk = k => { if (typeof telem !== 'undefined' && telem && telem.onBreachKind) telem.onBreachKind(p, k); };
+  if (b.lv < LVMAX && !(b.rally >= 1)) { tk('fresh'); return; }
+  const st = brSet[p], w = b.lv >= LVMAX ? 2 : 1, now = gameNow();
+  // 同じセットの中では、同じ列からの突破は1回だけ数える（ススメバチを除く）。
+  const col = Math.max(0, Math.min(COLS - 1, Math.floor(b.x / CW)));
+  if (st.phase === 'idle') { st.phase = 'count'; st.t0 = now; st.count = w; st.cols = new Set([col]); tk(w === 2 ? 'hornet' : 'counted'); }
+  else if (st.phase === 'count') {
+    if (b.lv < LVMAX && st.cols.has(col)) { tk('samecol'); return; }
+    st.cols.add(col); st.count += w; tk(w === 2 ? 'hornet' : 'counted');
+  }
+  else tk('rest');
+}
+function brStep() {
+  if (!armorMode || !brSet) return;
+  const now = gameNow(), penMs = opt.penalty * 1000;
+  for (const p of [BOT, TOP]) {
+    const st = brSet[p];
+    if (st.phase === 'count' && now >= st.t0 + penMs) st.phase = 'rest';
+    if (st.phase === 'rest' && now >= st.t0 + penMs + armorRest * 1000) {
+      const gain = st.count >= 5 ? 3 : st.count >= 2 ? 1 : 0;
+      st.phase = 'idle'; st.count = 0;
+      if (!gain || over || inExtra) continue;   // ホイッスル後は撃てないので出さない
+      const myMax = isCpuPaddle(paddles[p]) ? withCpuLevel(p, cpuStockMax) : opt.stockMax;
+      const room = Math.max(0, myMax - (held[p] + inPlay(p) + penalty[p].length));
+      const got = Math.min(gain, room);
+      if (got > 0) {
+        held[p] += got; sndSupply();
+        pushJust(paddles[p].x, paddleY(p) - DIR[p] * CH * 1.2, p, got >= 3 ? 'bonus3' : 'bonus1');
+        if (typeof telem !== 'undefined' && telem && telem.onBreachBonus) telem.onBreachBonus(p, got);
+      }
+    }
+  }
+}
 function applyMap(name) {
   const def = MAPS[name];
   if (!def) return;
+  if (def.any) {                       // 広さを問わないマップ
+    for (const p of [BOT, TOP]) {
+      const r = PADDLE_ROW[p];
+      for (let c = 0; c < COLS; c++) {
+        if (attr[r][c] && attr[r][c].solid) continue;
+        attr[r][c] = { tough: def.footTough };
+        hp[r][c] = def.footTough;
+      }
+    }
+    return;
+  }
   const m = def.rows;
   if (COLS !== def.size[0] || ROWS !== def.size[1]) return;
   const half = Math.min(m.length, Math.floor(ROWS / 2));
@@ -1777,12 +1921,28 @@ function flushPendingFlips(now) {
   }
 }
 
+/* ==== クリスタルウォールの屈折 ==========================================
+   反転した直後のマスは lock の間（0.5秒）相手の玉を弾く。これがクリスタルウォール。
+   ここへ垂直に近い角度（±8度以内）で当たった玉は、真っすぐ戻らず斜めにそれる。
+   ずれは当たった位置で決まる（ランダムにしない）。マスの中心から右なら右へ、左なら左へ、
+   中心で6度、端で15度。ちょうど中心なら列の偶奇で向きを決める。
+   CPUの先読み（predictLanding）にも同じ計算を入れて、読みが狂わないようにする。 */
+const CRYSTAL_VERT = Math.sin(8 * Math.PI / 180);
+function crystalRefract(vx, vy, x, c) {
+  const m = Math.hypot(vx, vy) || 1;
+  if (Math.abs(vx) / m > CRYSTAL_VERT) return null;          // 垂直に近くなければそのまま
+  let off = (x - (c + 0.5) * CW) / (CW / 2);
+  off = Math.max(-1, Math.min(1, off));
+  const sgn = Math.abs(off) < 0.02 ? (c % 2 ? 1 : -1) : Math.sign(off);
+  const a = sgn * (6 + 9 * Math.abs(off)) * Math.PI / 180;
+  return [m * Math.sin(a), Math.sign(vy) * m * Math.cos(a)];
+}
 function hitCell(r, c, p, now, b) {
   // パドル行の反転は保留し、パドルが覆っていないときに実行する（flushPendingFlips）。
   // 足元が壁になるとパドル自身が動けなくなり、サイドアタックで応じる道が消えるため。
   const a = attr[r][c];
   if (a && a.solid) { sndSolid(); return true; }
-  if (lockedAgainst[r][c] === p && now < lockUntil[r][c]) { sndWall(); return true; }
+  if (lockedAgainst[r][c] === p && now < lockUntil[r][c]) { sndWall(); b.crystalC = c; return true; }
 
   // 貫通力の下限は1。1のときは普通の玉として、1ヒットで装甲を1削るか1マス反転する。
   if (hp[r][c] > 0) {
@@ -2037,9 +2197,28 @@ function endSideCrash(b) {
   }
 }
 const crashFx = [];
+const crystalFx = [];   // クリスタルウォールの屈折：小さな光
+function drawCrystalFx() {
+  for (const f of crystalFx) {
+    const k = 1 - f.t / 0.35;
+    ctx.save();
+    ctx.globalAlpha = Math.max(0, 1 - k);
+    ctx.strokeStyle = '#D9FBFF'; ctx.lineWidth = 2;
+    const r = CW * (0.25 + 0.55 * k);
+    ctx.beginPath();
+    for (let i = 0; i < 4; i++) {
+      const a = i * Math.PI / 2 + k * 0.8;
+      ctx.moveTo(f.x + Math.cos(a) * r * 0.3, f.y + Math.sin(a) * r * 0.3);
+      ctx.lineTo(f.x + Math.cos(a) * r, f.y + Math.sin(a) * r);
+    }
+    ctx.stroke();
+    ctx.restore();
+  }
+}
 const justFx = [];   // 技の文字（JUST／CRASH!／SLASH!／エインヘリヤルの「！！」）
 function stepCrashFx(dt) {
   for (let i = justFx.length - 1; i >= 0; i--) { justFx[i].t -= dt; if (justFx[i].t <= 0) justFx.splice(i, 1); }
+  for (let i = crystalFx.length - 1; i >= 0; i--) { crystalFx[i].t -= dt; if (crystalFx[i].t <= 0) crystalFx.splice(i, 1); }
   for (let i = crashFx.length - 1; i >= 0; i--) {
     crashFx[i].t -= dt;
     if (crashFx[i].t <= 0) crashFx.splice(i, 1);
@@ -2054,7 +2233,19 @@ function updateStockPanels() {
     const pen = penalty[p] ? penalty[p].length : 0;
     const fr = paddles && paddles[p] && paddles[p].froze > 0 ? Math.ceil(paddles[p].froze) : 0;
     const flip = p === TOP && versus;
-    const key = n + '|' + pen + '|' + fr + '|' + flip;
+    // 突破ボーナスの状態：受付中の数と残り秒、確定した報酬と入るまでの秒
+    let brTxt = '', okTxt = '';
+    if (armorMode && brSet && brSet[p] && brSet[p].phase !== 'idle') {
+      const st = brSet[p], now = gameNow(), penMs = opt.penalty * 1000;
+      const gain = st.count >= 5 ? 3 : st.count >= 2 ? 1 : 0;
+      if (st.phase === 'count') {
+        brTxt = L('突破 ', 'Break ') + st.count + ' ⏱' + Math.max(0, Math.ceil((st.t0 + penMs - now) / 1000));
+        if (gain) okTxt = '+' + gain + L('確定', ' locked');
+      } else if (gain) {
+        okTxt = '+' + gain + L('確定 ', ' in ') + Math.max(0, Math.ceil((st.t0 + penMs + armorRest * 1000 - now) / 1000)) + L('秒', 's');
+      }
+    }
+    const key = n + '|' + pen + '|' + fr + '|' + flip + '|' + brTxt + '|' + okTxt;
     if (key === stockPanelKey[p]) continue;
     stockPanelKey[p] = key;
     const col = p === BOT ? '#F5C518' : '#2FA8DC';
@@ -2063,6 +2254,8 @@ function updateStockPanels() {
     h += '<span class="n">' + n + '</span>';
     if (pen) h += '<span class="sub">' + L('謹慎 ', 'Wait ') + pen + '</span>';
     if (fr) h += '<span class="sub hot">' + L('硬直 ', 'Stun ') + fr + '</span>';
+    if (brTxt) h += '<span class="sub brk">' + brTxt + '</span>';
+    if (okTxt) h += '<span class="sub ok">' + okTxt + '</span>';
     el.innerHTML = h;
     el.classList.toggle('empty', n === 0);
     el.classList.toggle('flip', flip);
@@ -2186,7 +2379,9 @@ addEventListener('load', scheduleLayoutStage);
 const FX_TEXT = {
   just:  { text: 'JUST',   color: '#FFE14D', size: 0.8 },
   crash: { text: 'CRASH!', color: '#FF7A45', size: 0.8 },
-  slash: { text: 'SLASH!', color: '#6FE0FF', size: 0.88 }
+  slash: { text: 'SLASH!', color: '#6FE0FF', size: 0.88 },
+  bonus1: { text: '+1', color: '#9CFF6B', size: 0.95 },
+  bonus3: { text: '+3!!', color: '#FFE14D', size: 1.1 }
 };
 function drawJustFx() {
   for (const f of justFx) {
@@ -2232,7 +2427,7 @@ function drawEinFx(f, a) {
   ctx.fillText('!!', f.x + jitter, y);
   ctx.restore();
 }
-const FX_DUR = { just: 0.7, crash: 0.7, slash: 0.8, ein: 1.1 };
+const FX_DUR = { just: 0.7, crash: 0.7, slash: 0.8, ein: 1.1, bonus1: 1.0, bonus3: 1.3 };
 function pushJust(x, y, who, kind = 'just') {
   const dur = FX_DUR[kind] || 0.7;
   justFx.push({ x: Math.max(CW * 1.2, Math.min(CW * COLS - CW * 1.2, x)), y, t: dur, dur, kind,
@@ -2339,6 +2534,9 @@ function launch(p, angle) {
   if (over || countIn > 0 || inExtra) return false;   // ホイッスル後は増援なし
   if (held[p] <= 0 || inPlay(p) >= ballCap()) return false;
   held[p]--;
+  // CPUの第1打はランダムな角度。同じレベル同士が鏡写しの試合を続けないように、最初に対称を崩す。
+  if (cpuFirstShot[p] && isCpuPaddle(paddles[p])) { cpuFirstShot[p] = false; angle = (Math.random() * 2 - 1) * AIMMAX * 0.8; }
+  else if (isCpuPaddle(paddles[p]) && angle !== undefined && !isGptSide(p)) angle += (Math.random() - 0.5) * 2 * 3 * Math.PI / 180;   // 狙いに±3度の揺らぎ
   const a = angle === undefined ? Math.random() * 0.6 - 0.3 : angle;
   balls.push({
     owner: p,
@@ -2423,6 +2621,8 @@ function reset() {
   else if (mapName === 'カスタム' && customMap &&
            customMap.length === ROWS && customMap[0].length === COLS) applyCustom(customMap);
   else applyMap(mapName);
+  applyArmorFooting();
+  brReset();
   balls = [];
   paddles = {
     0: { x: CW * COLS / 2, w: PADW, home: CW * COLS / 2, froze: 0, prevX: CW * COLS / 2, svx: 0, pvx: 0, peakSeen: 0, swingT: 0, justOk: false },
@@ -2445,6 +2645,7 @@ function reset() {
   planBy[0].at = planBy[1].at = -1;
   cpuCrashBy[0] = cpuCrashBy[1] = null;
   cpuTimerBy[0] = cpuTimerBy[1] = 0;
+  cpuFirstShot[0] = cpuFirstShot[1] = true;
   gptReset();
   if (typeof telem !== 'undefined' && telem) telem.reset();
   waiting = true;      // 開始ボタン待ち
@@ -2624,6 +2825,7 @@ function stepBall(b, dt, now) {
 
     // 横・縦・斜めの順に見る。斜めは縦横のどちらも空いている時だけ判定する。
     let bx = false, by = false;
+    b.crystalC = -1;
     if (cx !== c0 && inGrid(r0, cx) && blocks(r0, cx, p)) {
       bx = hitCell(r0, cx, p, now, b);
       if (b.sideCrash) {
@@ -2648,6 +2850,11 @@ function stepBall(b, dt, now) {
       const edge = vy0 > 0 ? (r0 + 1) * CH - 0.01 : r0 * CH + 0.01;
       ny = edge; b.vy *= -1;
       b.scPost = false;
+      // クリスタルウォールに垂直で当たったら屈折させる
+      if (b.crystalC >= 0 && !b.sideCrash && !bx) {
+        const rf = crystalRefract(b.vx, b.vy, b.x, b.crystalC);
+        if (rf) { b.vx = rf[0]; b.vy = rf[1]; crystalFx.push({ x: b.x, y: ny, t: 0.35 }); bell(2093, 0.18, 0.05); }
+      }
     }
 
     // 横薙ぎの上限。貫通が高い玉（とくにMAX）は壁まで削り切ってしまうので、
@@ -2728,7 +2935,7 @@ function stepBall(b, dt, now) {
         }
         sndLost(p);
       }
-      else { penalty[p].push(opt.penalty); sndSin(); }
+      else { penalty[p].push(opt.penalty); sndSin(); brOnBreach(p, b); if (typeof telem !== 'undefined' && telem) telem.onBreach(p); }
       return;
     }
   }
@@ -3184,7 +3391,13 @@ function predictLanding(b, p) {
       else { flipped.add(cy * COLS + c0); by = true; }
     }
     if (bx) vx = -vx;
-    if (by) vy = -vy;
+    if (by) {
+      vy = -vy;
+      if (!bx && lockedAgainst[cy] && lockedAgainst[cy][c0] === p && gameNow() < lockUntil[cy][c0]) {
+        const rf = crystalRefract(vx, vy, x, c0);
+        if (rf) { vx = rf[0]; vy = rf[1]; }
+      }
+    }
     if (!bx && !by) { x = nx; y = ny; }
     // パドル列に届いたか
     if ((p === TOP && vy < 0 && y <= py) || (p === BOT && vy > 0 && y >= py)) return x;
@@ -3521,12 +3734,16 @@ function cpuAim(p) {
 // CPU同士を戦わせられるように、どちらの側でも動くようにする。
 // 砲撃タイマーは共有のままにして、呼び出しの前後で側ごとに入れ替える。
 const cpuTimerBy = [0, 0];
+const cpuFirstShot = [true, true];
 function stepCpu(dt, p) {
   if (p === undefined) p = TOP;
   return withCpuLevel(p, () => {
   if (cpuTier() === 3) { stepGpt(dt, p); return; }
   cpuTimer = cpuTimerBy[p];
+  const tBefore = cpuTimer;
   stepCpuCore(dt, p);
+  // 撃つ間隔に±15%の揺らぎ。同じレベル同士でも撃つ拍子がずれて、鏡写しが続かない。
+  if (cpuTimer > tBefore + 1e-6) cpuTimer *= 0.85 + Math.random() * 0.3;
   cpuTimerBy[p] = cpuTimer;
   });
 }
@@ -3791,6 +4008,7 @@ function tick(t) {
 // 世界を dt 秒だけ進める。戻り値 false はカウントダウン中（描画済み）。
 function stepWorld(dt) {
   flushPendingFlips(gameNow());
+  if (running && !over && !waiting && countIn <= 0) brStep();
   stepHornetMode(dt);
   stepHumanInput(dt);
   if (running && !over && !waiting) {
@@ -3882,7 +4100,15 @@ function drawBlockSprite(x, y, owner, solid, health) {
 // Cached beveled tile materials: no per-cell gradient allocation during play.
 const hdTiles = new Map();
 // 標準表示のマス。v33までの平坦な塗り。
-function flatTile(x, y, owner, solid, health) {
+// 装甲の減り具合で色を白へ寄せる。満タンで0、残り1段で最大。耐久の最大値は各マスの初期値。
+function wearMix(hex, f) {
+  if (!f) return hex;
+  const n = parseInt(hex.slice(1), 16), r = n >> 16, g = (n >> 8) & 255, b = n & 255;
+  const m = v => Math.round(v + (255 - v) * f);
+  return '#' + ((1 << 24) + (m(r) << 16) + (m(g) << 8) + m(b)).toString(16).slice(1);
+}
+function wearOf(health, maxH) { return health > 0 && maxH > 0 ? (maxH - health) / maxH * 0.62 : 0; }
+function flatTile(x, y, owner, solid, health, maxH) {
   if (solid) {
     ctx.fillStyle = '#3A3A34';
     ctx.fillRect(x + 0.5, y + 0.5, CW - 1, CH - 1);
@@ -3894,7 +4120,7 @@ function flatTile(x, y, owner, solid, health) {
     ctx.stroke();
     return;
   }
-  ctx.fillStyle = owner === BOT ? '#7D8654' : '#2E5266';
+  ctx.fillStyle = wearMix(owner === BOT ? '#7D8654' : '#2E5266', wearOf(health, maxH));
   ctx.fillRect(x + 0.5, y + 0.5, CW - 1, CH - 1);
   if (health > 0) {
     ctx.fillStyle = '#E3E1D8';
@@ -3904,14 +4130,15 @@ function flatTile(x, y, owner, solid, health) {
   }
 }
 
-function hdTile(owner, solid, health) {
-  const key = [CW,CH,owner,solid,health].join(':');
+function hdTile(owner, solid, health, maxH) {
+  const key = [CW,CH,owner,solid,health,maxH||0].join(':');
   if (hdTiles.has(key)) return hdTiles.get(key);
   const tile = document.createElement('canvas');
   tile.width = CW * 3; tile.height = CH * 3;
   const g = tile.getContext('2d'); g.scale(3,3);
   const w=CW, h=CH, raised=solid || health>0, d=raised ? 3.5 : 2;
-  const colors = solid ? ['#afb7bd','#667582','#303e4a'] : owner === BOT ? ['#d3db88','#889949','#465a27'] : ['#78c4dc','#357d9e','#153f59'];
+  const wf = solid ? 0 : wearOf(health, maxH);
+  const colors = (solid ? ['#afb7bd','#667582','#303e4a'] : owner === BOT ? ['#d3db88','#889949','#465a27'] : ['#78c4dc','#357d9e','#153f59']).map(c => wearMix(c, wf));
   g.fillStyle='#101c26';g.fillRect(0,0,w,h);
   g.fillStyle='#050b12';g.fillRect(1.5,2,w-2,h-2);
   const gradient=g.createLinearGradient(0,1,w*.65,h);
@@ -3977,9 +4204,9 @@ function draw() {
       }
       if (!drawBlockSprite(x, y, grid[r][c], !!(a && a.solid), hp[r][c])) {
         if (hdMode) {
-          ctx.drawImage(hdTile(grid[r][c], !!(a && a.solid), hp[r][c]), x, y, CW, CH);
+          ctx.drawImage(hdTile(grid[r][c], !!(a && a.solid), hp[r][c], a && a.tough), x, y, CW, CH);
         } else {
-          flatTile(x, y, grid[r][c], !!(a && a.solid), hp[r][c]);
+          flatTile(x, y, grid[r][c], !!(a && a.solid), hp[r][c], a && a.tough);
         }
       }
       if (now < lockUntil[r][c]) {
@@ -4491,7 +4718,7 @@ function showCert(text, winner) {
   const rows = [
     [L('勝利条件', 'Win by'), reasonLabel(text)],
     [L('スコア', 'Score'), (ab + pb) + L(' 対 ', ' vs ') + (at + pt) + L('（陣地 ', ' (Territory ') + ab + L('＋玉 ', ' + Bees ') + pb + L('）', ')')],
-    [L('盤面', 'Board'), sizeLabel(sizeName) + '　' + mapLabel(mapName)],
+    [L('盤面', 'Board'), sizeLabel(sizeName) + '　' + mapLabel(mapName) + (armorMode ? L('　城壁モード', ' / Rampart Mode') : '')],
     [L('制限時間', 'Time Limit'), opt.limit + L(' 秒', ' s')],
     [L('玉の速さ', 'Bee Speed'), String(opt.speed)],
     [L('貫通', 'Penetration'), onoff(opt.pierce)],
@@ -4569,6 +4796,7 @@ function hud() {
     : !bgmBuf ? '未読込'
     : bgmSrc ? '再生中' : '準備完了';
   drawCrashFx();
+  drawCrystalFx();
   drawJustFx();
   updateStockPanels();
   drawSpeedDebug();
@@ -4932,6 +5160,14 @@ function applyRule(key) {
   reset();
   showReady();
 }
+function setArmorMode(on) {
+  armorMode = !!on;
+  $('footNormal').classList.toggle('on', !armorMode);
+  $('footArmor').classList.toggle('on', armorMode);
+  reset();
+}
+$('footNormal').addEventListener('click', () => setArmorMode(false));
+$('footArmor').addEventListener('click', () => setArmorMode(true));
 $('ruleStd').addEventListener('click', () => applyRule('std'));
 $('ruleOff').addEventListener('click', () => applyRule('ofc'));
 $('ruleBoom').addEventListener('click', () => applyRule('boom'));
@@ -5125,7 +5361,7 @@ document.addEventListener('pointercancel',e=>inputUp(e,true));
 document.addEventListener('lostpointercapture',e=>inputUp(e,true));
 addEventListener('blur',clearHumanInput);
 document.addEventListener('visibilitychange',()=>{if(document.hidden)clearHumanInput();});
-for(const [id,key] of [['pmax','max'],['inertia','inertia'],['ikf','ikf'],['ika','ika'],['hold','hold'],['sh','sh'],['cap','cap'],['ein','ein'],['rld','rld'],['ccr','ccr'],['cca','cca'],['cao','cao'],['cstk','cstk'],['ctrk','ctrk'],['crv','crv'],['pdp','pdp'],['jband','jband'],['jmin','jmin'],['cjust','cjust'],['allout','allout'],['extra','extra'],['scOn','scOn'],['hrn','hrn'],['hrnT','hrnT'],['dbg','dbg']]){
+for(const [id,key] of [['pmax','max'],['inertia','inertia'],['ikf','ikf'],['ika','ika'],['hold','hold'],['sh','sh'],['cap','cap'],['ein','ein'],['rld','rld'],['ccr','ccr'],['cca','cca'],['cao','cao'],['cstk','cstk'],['ctrk','ctrk'],['crv','crv'],['pdp','pdp'],['jband','jband'],['jmin','jmin'],['cjust','cjust'],['allout','allout'],['extra','extra'],['scOn','scOn'],['arRest','arRest'],['hrn','hrn'],['hrnT','hrnT'],['dbg','dbg']]){
  $(id).addEventListener('input',()=>{const v=+$(id).value;
   $(id+'v').textContent=(key==='dbg'||key==='scOn'||key==='hrn')?(v?'入':'切'):v;
   if(key==='max')humanMax=v;else if(key==='inertia')humanInertia=v;
@@ -5148,6 +5384,7 @@ for(const [id,key] of [['pmax','max'],['inertia','inertia'],['ikf','ikf'],['ika'
   else if(key==='cca'){cpuCrashAt=v;$(id+'v').textContent=v>=0?v+'%':'難易度別';}
   else if(key==='rld'){crashReload=!!v;$(id+'v').textContent=v?'入':'切';}
   else if(key==='scOn')sideCrashOn=!!v;
+  else if(key==='arRest'){armorRest=v;$(id+'v').textContent=v+'秒';}
   else if(key==='hrn'){hornetMode=!!v;hornetTimer=hornetEvery;}
   else if(key==='hrnT'){hornetEvery=v;hornetTimer=Math.min(hornetTimer,v);}
   else showSpeed=!!v;
@@ -5216,7 +5453,7 @@ const PRE_KEY = 'hachinos_pre';
 function showPre() { $('pre').classList.remove('off'); }
 function hidePre() { $('pre').classList.add('off'); }
 function savePre() {
-  try { localStorage.setItem(PRE_KEY, JSON.stringify({ rule: ruleKey, vs: versus, cpu: +opt.cpu, size: sizeName, map: mapName })); } catch (e) {}
+  try { localStorage.setItem(PRE_KEY, JSON.stringify({ rule: ruleKey, vs: versus, cpu: +opt.cpu, size: sizeName, map: mapName, armor: armorMode })); } catch (e) {}
 }
 function restorePre() {
   let p = null;
@@ -5229,6 +5466,7 @@ function restorePre() {
   if (lv && (p.cpu < 140 || p.rule === 'boom')) lv.click();
   if (p.size && SIZES[p.size]) { $('size').value = p.size; $('size').dispatchEvent(new Event('change')); }
   if (p.map && MAPS[p.map]) { $('map').value = p.map; $('map').dispatchEvent(new Event('change')); }
+  if (p.armor) setArmorMode(true);
 }
 // 試合をやめて（または終えて）開始前の画面へ戻る
 function goPre() {
@@ -5240,6 +5478,8 @@ function goPre() {
 $('preGo').addEventListener('click', () => { savePre(); hidePre(); reset(); showReady(); });
 $('preHelp').addEventListener('click', () => $('howto').classList.remove('off'));
 $('howtoClose').addEventListener('click', () => $('howto').classList.add('off'));
+document.querySelectorAll('.newsBtn').forEach(b => b.addEventListener('click', () => { $('news').classList.remove('off'); const sh = document.querySelector('#news .sheet'); if (sh) sh.scrollTop = 0; }));
+$('newsClose').addEventListener('click', () => $('news').classList.add('off'));
 $('veilBack').addEventListener('click', goPre);
 $('resBack').addEventListener('click', goPre);
 $('setQuit').addEventListener('click', goPre);
@@ -5331,7 +5571,7 @@ requestAnimationFrame(tick);
 ======================================================================== */
 const TELEM_KEY = 'hachinos_telemetry_v1';
 const TELEM_MAX = 40;
-const BUILD = 'd85f';
+const BUILD = 'd86';
 document.querySelectorAll('.buildNo').forEach(e => { e.textContent = BUILD; });
 
 function telemDeviceId() {
@@ -5354,9 +5594,9 @@ var telem = {
       peak: 0, peakSvx: 0,
       swingPeaks: [], curPeak: 0, curSign: 0,
       ret: 0, retOff: [], retAdd: [], retSpd: [], retToward: 0,
-      crash: 0, crashBonus: 0, crashFoe: 0, crashFoeBonus: 0, kill: 0, killFoe: 0, hornetHit: [0, 0],
+      crash: 0, crashBonus: 0, crashFoe: 0, crashFoeBonus: 0, kill: 0, killFoe: 0, armor: armorMode, bonus: [0, 0], hornetHit: [0, 0],
       miss: { away: 0, noside: 0 }, crashMax: 0, crashMaxFoe: 0, crashFlip: 0, crashFlipRun: 0, crashFlipMax: 0, crashPost: 0, crashSpd: [], crashFull: 0, steal: 0, stealFoe: 0, einherjar: 0, einTry: 0, crashSwing: [], crashOff: [],
-      launches: [0, 0], smashed: [0, 0],
+      launches: [0, 0], smashed: [0, 0], breach: [0, 0], bk: { counted: [0, 0], hornet: [0, 0], fresh: [0, 0], samecol: [0, 0], rest: [0, 0] },
       ptr: 0, ptrGaps: [], lastPtr: 0,
       ended: false, result: '', winner: null, dur: 0
     };
@@ -5411,6 +5651,9 @@ var telem = {
   onEinChallenge(p) { const m = this.m; if (!m || p !== BOT) return; m.einTry++; },
   onEinherjar(p) { const m = this.m; if (!m || p !== BOT) return; m.einherjar++; },
   // ススメバチ撃退（p=迎撃した側）
+  onBreachKind(p, k) { const m = this.m; if (!m || !m.bk || !m.bk[k]) return; m.bk[k][p]++; },
+  onBreach(p) { const m = this.m; if (!m || !m.breach) return; m.breach[p]++; },
+  onBreachBonus(p, n) { const m = this.m; if (!m || !m.bonus) return; m.bonus[p] += n; },
   onHornetKill(p) { const m = this.m; if (!m) return;
     if (p === BOT) m.kill++; else m.killFoe++; },
   // 迎撃しそこねた理由。away=逆へ振っていた / noside=側面に当たっていない
@@ -5485,8 +5728,8 @@ var telem = {
       crashSpd: m.crashSpd.slice(), crashSpdMed: med(m.crashSpd), crashSpdP90: pct(m.crashSpd, 90),
       crashSpdMax: Math.max(0, ...m.crashSpd), crashFull: m.crashFull, steal: m.steal, stealFoe: m.stealFoe, einherjar: m.einherjar, einTry: m.einTry,
       crashSwing: m.crashSwing.slice(), crashSwingMed: med(m.crashSwing), crashOff: m.crashOff.slice(),
-      kill: m.kill, killFoe: m.killFoe, hornetHit: m.hornetHit.slice(),
-      shots: m.launches.slice(), smash: m.smashed.slice(),
+      kill: m.kill, killFoe: m.killFoe, armor: !!m.armor, bonus: m.bonus ? m.bonus.slice() : [0, 0], hornetHit: m.hornetHit.slice(),
+      shots: m.launches.slice(), smash: m.smashed.slice(), breach: m.breach ? m.breach.slice() : [0, 0], bk: m.bk ? JSON.parse(JSON.stringify(m.bk)) : null,
       ptr: m.ptr, ptrMed: med(m.ptrGaps), ptrMax: Math.max(0, ...m.ptrGaps)
     };
   },
@@ -5526,7 +5769,9 @@ var telem = {
       `  （上限の割合では 中央値${Math.round(c.retMed / Math.max(1, cfg.humanMax) * 100)}% 上位10%${Math.round(c.retP90 / Math.max(1, cfg.humanMax) * 100)}%）`,
       `当てた位置 平均 ${c.offAvg}（0=中央 1=端） / 勢い返し 平均${c.addAvg}度 最大${c.addMax}度`,
       `玉の方へ振っていた返球 ${c.retToward}回（${retSum ? Math.round(c.retToward / retSum * 100) : 0}%）`,
-      `発射 下${c.shots[0]}回 上${c.shots[1]}回 / 謹慎 下${c.smash[0]}回 上${c.smash[1]}回`,
+      `発射 下${c.shots[0]}回 上${c.shots[1]}回 / 突破（謹慎） 下${(c.breach||[0,0])[0]}回 上${(c.breach||[0,0])[1]}回 / パドル破壊された 下${c.smash[0]}回 上${c.smash[1]}回`,
+      `城壁モード ${c.armor ? 'オン' : 'オフ'}` + (c.armor ? ` / 突破ボーナス 下${(c.bonus||[0,0])[0]}個 上${(c.bonus||[0,0])[1]}個` : ''),
+      ...(c.armor && c.bk ? [`  突破の内訳（下/上） 数えた 通常 ${c.bk.counted[0]}/${c.bk.counted[1]}・ススメバチ ${c.bk.hornet[0]}/${c.bk.hornet[1]} ／ 対象外 撃ちっぱなし ${c.bk.fresh[0]}/${c.bk.fresh[1]}・同じ列 ${c.bk.samecol[0]}/${c.bk.samecol[1]}・休み中 ${c.bk.rest[0]}/${c.bk.rest[1]}`] : []),
       ``,
       `【サイドアタック】自分 ${c.crash}回（うちジャスト ${c.crashBonus}回） / 相手 ${c.crashFoe}回（うちジャスト ${c.crashFoeBonus}回）`,
       `当たった高さ（面からのずれ・px） [${(c.crashOff || []).join(', ')}]  ジャストは${cfg.justPx}px以内`,
