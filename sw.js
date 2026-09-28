@@ -1,7 +1,7 @@
 // Bee Bee Block / ハチノスツツク — オフライン用
 // 一度開いたゲームを端末に保存し、次からは電波がなくても起動できるようにする。
 // ネットにつながっているときは裏で新しい版を取りに行き、次の起動から入れ替わる。
-const VERSION = 'd86';
+const VERSION = 'd86a';
 const CACHE = 'beebeeblock-' + VERSION;
 const FILES = ['./', './index.html', './manifest.webmanifest', './icon-192.png', './icon-512.png'];
 
